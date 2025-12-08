@@ -1,0 +1,172 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.7
+    command: start-dev --import-realm
+    volumes:
+      - ./config/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    environment:
+      KC_DB: dev-file
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8180
+    ports:
+      - "8180:8180"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8180/realms/master" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.21
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:14269/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  product-service:
+    build: ./example-ecom-product-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:productdb
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:productdb
+      - SPRING_ZIPKIN_BASE_URL=http://jaeger:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+
+  customer-service:
+    build: ./example-ecom-customer-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVER_PORT=8081
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:customerdb
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:customerdb
+      - SPRING_ZIPKIN_BASE_URL=http://jaeger:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+
+  order-service:
+    build: ./example-ecom-order-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SERVER_PORT=8082
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:orderdb
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - PRODUCT_SERVICE_URL=http://product-service:8080
+      - CUSTOMER_SERVICE_URL=http://customer-service:8081
+      - FRAUD_DETECTION_SERVICE_URL=http://fraud-detection-service:8087
+      - FRAUD_DETECTION_SERVICE_URL=http://fraud-detection-service:8087
+      - SPRING_ZIPKIN_BASE_URL=http://jaeger:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      product-service:
+        condition: service_started
+      customer-service:
+        condition: service_started
+      fraud-detection-service:
+        condition: service_started
+      jaeger:
+        condition: service_healthy
+
+  inventory-service:
+    build: ./example-ecom-inventory-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SERVER_PORT=8083
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:inventorydb
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_ZIPKIN_BASE_URL=http://jaeger:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      jaeger:
+        condition: service_healthy
+
+  notification-service:
+    build: ./example-ecom-notification-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SERVER_PORT=8084
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_ZIPKIN_BASE_URL=http://jaeger:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      jaeger:
+        condition: service_healthy
+
+  kyc-service:
+    build: ./example-ecom-kyc-service
+    ports:
+      - "8085:8085"
+    environment:
+      - SERVER_PORT=8085
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:kycdb
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:kycdb
+      - SPRING_ZIPKIN_BASE_URL=http://jaeger:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+
+  risk-score-service:
+    build: ./example-ecom-risk-score-service
+    ports:
+      - "8086:8086"
+    environment:
+      - SERVER_PORT=8086
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:riskdb
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:riskdb
+      - SPRING_ZIPKIN_BASE_URL=http://jaeger:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+
+  fraud-detection-service:
+    build: ./example-ecom-fraud-detection-service
+    ports:
+      - "8087:8087"
+    environment:
+      - SERVER_PORT=8087
+      - KYC_SERVICE_URL=http://kyc-service:8085
+      - RISK_SCORE_SERVICE_URL=http://risk-score-service:8086
+      - RISK_SCORE_SERVICE_URL=http://risk-score-service:8086
+      - SPRING_ZIPKIN_BASE_URL=http://jaeger:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+    depends_on:
+      kyc-service:
+        condition: service_started
+      risk-score-service:
+        condition: service_started
+      jaeger:
+        condition: service_healthy

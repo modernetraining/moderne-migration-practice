@@ -1,0 +1,244 @@
+{
+    "info": {
+        "_postman_id": "ecom-e2e-test",
+        "name": "E-Commerce E2E Test",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. Get Auth Token",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "var jsonData = pm.response.json();",
+                            "pm.environment.set(\"access_token\", jsonData.access_token);",
+                            "pm.test(\"Status code is 200\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ],
+                "body": {
+                    "mode": "urlencoded",
+                    "urlencoded": [
+                        {
+                            "key": "client_id",
+                            "value": "ecom-service",
+                            "type": "text"
+                        },
+                        {
+                            "key": "client_secret",
+                            "value": "ecom-secret",
+                            "type": "text"
+                        },
+                        {
+                            "key": "grant_type",
+                            "value": "password",
+                            "type": "text"
+                        },
+                        {
+                            "key": "username",
+                            "value": "test-user",
+                            "type": "text"
+                        },
+                        {
+                            "key": "password",
+                            "value": "password",
+                            "type": "text"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "http://localhost:8180/realms/ecom-realm/protocol/openid-connect/token",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8180",
+                    "path": [
+                        "realms",
+                        "ecom-realm",
+                        "protocol",
+                        "openid-connect",
+                        "token"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "2. Create Customer",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "var jsonData = pm.response.json();",
+                            "pm.environment.set(\"customer_id\", jsonData.id);",
+                            "pm.test(\"Status code is 200\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"name\": \"E2E User\",\n    \"email\": \"e2e@example.com\"\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8081/api/customers",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8081",
+                    "path": [
+                        "api",
+                        "customers"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "3. Create Product",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "var jsonData = pm.response.json();",
+                            "pm.environment.set(\"product_id\", jsonData.id);",
+                            "pm.test(\"Status code is 200\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"name\": \"E2E Laptop\",\n    \"price\": 1500.00,\n    \"description\": \"E2E Test Laptop\"\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8080/api/products",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080",
+                    "path": [
+                        "api",
+                        "products"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "4. Create Order",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "var jsonData = pm.response.json();",
+                            "pm.environment.set(\"order_id\", jsonData.id);",
+                            "pm.test(\"Status code is 200\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"customerId\": {{customer_id}},\n    \"items\": [\n        {\n            \"productId\": \"{{product_id}}\",\n            \"quantity\": 1\n        }\n    ],\n    \"totalAmount\": 1500.00\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8082/api/orders",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8082",
+                    "path": [
+                        "api",
+                        "orders"
+                    ]
+                }
+            },
+            "response": []
+        }
+    ]
+}
