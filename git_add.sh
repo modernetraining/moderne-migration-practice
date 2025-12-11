@@ -4,77 +4,77 @@
 # set -e
 
 (
-cd ecom-common
+cd $WORKSPACE/ecom-common
 git add .
 git commit -m "$1"
 )
 
 (
 echo "Building ecom-security..."
-cd ecom-security
+cd $WORKSPACE/mtthwcmpbll/example-ecom-security
 git add .
 git commit -m "$1"
 )
 
 (
 echo "Building ecom-rest-client..."
-cd ecom-rest-client
+cd $WORKSPACE/mtthwcmpbll/example-ecom-rest-client
 git add .
 git commit -m "$1"
 )
 
 (
 echo "Building product-service..."
-cd product-service
+cd $WORKSPACE/mtthwcmpbll/example-ecom-product-service
 git add .
 git commit -m "$1"
 )
 
 (
 echo "Building customer-service..."
-cd customer-service
+cd $WORKSPACE/mtthwcmpbll/example-ecom-customer-service
 git add .
 git commit -m "$1"
 )
 
 (
 echo "Building order-service..."
-cd order-service
+cd $WORKSPACEmtthwcmpbll/example-ecom-order-service
 git add .
 git commit -m "$1"
 )
 
 (
 echo "Building inventory-service..."
-cd inventory-service
+cd $WORKSPACE/mtthwcmpbll/example-ecom-inventory-service
 git add .
 git commit -m "$1"
 )
 
 (
 echo "Building notification-service..."
-cd notification-service
+cd $WORKSPACE/mtthwcmpbll/example-ecom-notification-service
 git add .
 git commit -m "$1"
 )
 
 (
 echo "Building kyc-service..."
-cd kyc-service
+cd $WORKSPACE/mtthwcmpbll/example-ecom-kyc-service
 git add .
 git commit -m "$1"
 )
 
 (
 echo "Building risk-score-service..."
-cd risk-score-service
+cd $WORKSPACE/mtthwcmpbll/example-ecom-risk-score-service
 git add .
 git commit -m "$1"
 )
 
 (
 echo "Building fraud-detection-service..."
-cd fraud-detection-service
+cd $WORKSPACE/mtthwcmpbll/example-ecom-fraud-detection-service
 git add .
 git commit -m "$1"
 )

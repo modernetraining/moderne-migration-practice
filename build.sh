@@ -21,10 +21,13 @@ build_service() {
     local service_name="$2"
 
     # Use a subshell to change directory safely without affecting the main script
-    if (cd "$service_path" && mvn clean install > "$LOG_FILE" 2>&1); then
+    if (cd "$service_path" && ./mvnw clean install > "$LOG_FILE" 2>&1); then
         echo -e "${GREEN}${service_name} built successfully${NC}"
     else
         echo -e "${RED}${service_name} build failed${NC}"
+
+        cat "$LOG_FILE"
+
         # Return failure status so the script can exit if desired
         return 1
     fi

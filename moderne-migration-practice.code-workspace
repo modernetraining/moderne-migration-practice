@@ -1,0 +1,44 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-security"
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-risk-score-service"
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-rest-client"
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-product-service"
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-order-service"
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-notification-service"
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-kyc-service"
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-inventory-service"
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-fraud-detection-service"
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-customer-service"
+		},
+		{
+			"path": "../../../workspaces/moderne-migration-workspace/mtthwcmpbll/example-ecom-common"
+		}
+	],
+	"settings": {
+		"java.compile.nullAnalysis.mode": "automatic",
+		"java.configuration.updateBuildConfiguration": "automatic"
+	}
+}
