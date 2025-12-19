@@ -235,6 +235,9 @@ We can see that only a couple of our projects - some but not all of our shared l
     1. Let's also run Maven Best Practices to make sure that we're not going to get surprised by any well-known issues like code building for a different version of Java than we expect:
         - `mod run . --recipe org.openrewrite.maven.BestPractices`
         - `mod git apply . --last-recipe-run`
+    1. Alright, it feels like we're as ready as we can be to jump to Spring Boot 4.0.  Let's do that now:
+        - `mod run . --recipe org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0`
+        - `mod git apply . --last-recipe-run`
     
     
 1. Let's run some migration planning recipes to see what we can learn:

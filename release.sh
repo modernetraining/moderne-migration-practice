@@ -11,6 +11,9 @@ NC='\033[0m' # No Color
 # Temporary log file to capture output
 LOG_FILE=$(mktemp)
 
+# Default to mtthwcmpbll if GITHUB_ORG is not set
+GITHUB_ORG=${GITHUB_ORG:-mtthwcmpbll}
+
 # Clean up log file on exit
 cleanup() {
     rm -f "$LOG_FILE"
@@ -130,34 +133,69 @@ run_release() {
     ( process_release "$1" "$2" )
 }
 
-echo "Starting Mass Release..."
+get_repo_path() {
+    local repo_name="$1"
+    local flat_path="${WORKSPACE}/${GITHUB_ORG}/${repo_name}"
+
+    if [ -d "$flat_path" ]; then
+        echo "$flat_path"
+        return 0
+    fi
+
+    # Check for nested wave structure (e.g. Workspace/Wave1/$GITHUB_ORG/$repo_name)
+    # matching any immediate subdirectory of WORKSPACE
+    local nested_paths=( "${WORKSPACE}"/*/"${GITHUB_ORG}/${repo_name}" )
+    
+    # Check if the glob expanded to an existing directory
+    if [ -d "${nested_paths[0]}" ]; then
+        echo "${nested_paths[0]}"
+        return 0
+    fi
+
+    echo ""
+    return 1
+}
+
+process_repo_release() {
+    local repo_name="$1"
+    local service_name="$2"
+    
+    local service_path=$(get_repo_path "$repo_name")
+    
+    if [ -z "$service_path" ]; then
+        echo -e "${RED}Could not find repository ${GITHUB_ORG}/${repo_name} in ${WORKSPACE}${NC}"
+        return 1
+    fi
+
+    run_release "$service_path" "$service_name"
+}
 
 # Wave definitions
 run_wave_0() {
     echo "Running Wave 0..."
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-common" "ecom-common"
+    process_repo_release "example-ecom-common" "ecom-common"
 }
 
 run_wave_1() {
     echo "Running Wave 1..."
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-security" "ecom-security"
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-inventory-service" "inventory-service"
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-kyc-service" "kyc-service"
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-notification-service" "notification-service"
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-risk-score-service" "risk-score-service"
+    process_repo_release "example-ecom-security" "ecom-security"
+    process_repo_release "example-ecom-inventory-service" "inventory-service"
+    process_repo_release "example-ecom-kyc-service" "kyc-service"
+    process_repo_release "example-ecom-notification-service" "notification-service"
+    process_repo_release "example-ecom-risk-score-service" "risk-score-service"
 }
 
 run_wave_2() {
     echo "Running Wave 2..."
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-rest-client" "ecom-rest-client"
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-customer-service" "customer-service"
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-product-service" "product-service"
+    process_repo_release "example-ecom-rest-client" "ecom-rest-client"
+    process_repo_release "example-ecom-customer-service" "customer-service"
+    process_repo_release "example-ecom-product-service" "product-service"
 }
 
 run_wave_3() {
     echo "Running Wave 3..."
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-fraud-detection-service" "fraud-detection-service"
-    run_release "${WORKSPACE}/mtthwcmpbll/example-ecom-order-service" "order-service"
+    process_repo_release "example-ecom-fraud-detection-service" "fraud-detection-service"
+    process_repo_release "example-ecom-order-service" "order-service"
 }
 
 echo "Starting Mass Release..."
