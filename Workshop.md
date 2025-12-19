@@ -11,7 +11,7 @@ Let's start by using the Moderne CLI to clone all of our example repositories in
 cd $WORKSPACE
 
 # Clone all of our example repositories into the workspace with their source code so that we can apply suggested changes from recipes
-mod git sync $WORKSHOP/repos.csv --with-sources
+mod git sync csv . $WORKSHOP/repos.csv --with-sources
 
 # Build an LST for each project
 mod build $WORKSPACE
