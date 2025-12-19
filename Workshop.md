@@ -33,6 +33,15 @@ This `repos.csv` lists all of our example repositories, and you can view the fin
 tree -d . -L 3
 ```
 
+This repository includes some helper scripts to run commands like testing, releasing, and doing common git actions across your repositories.  The software development lifecycle of building and releasing new versions of these repositories is usually handled by your existing process outside of OpenRewrite and Moderne, but in this workshop you can simulate a release with the included `release.sh` script.  Since all of our projects currently depend on a release version 1.0.0 of each other and those don't exist yet, go ahead and run a first release to get everything building:
+
+```bash
+$WORKSHOP/release.sh
+```
+
+This will automatically install the current non-SNAPSHOT version of each repository into your local Maven cache.  It will then bump the project's version to the next available minor SNAPSHOT version, ready for you to make more changes.
+
+
 ## Step 0: Run the full migration
 
 First up, you can always start by running the full migration recipe that we ultimately want to finish with.  This often gives us some information on some of the obvious pitfalls that we might run into, including incompatible libraries or additional customizations that we need to make to the recipe. Go ahead and run the upgrade Spring Boot 4.0 recipe now:
@@ -43,11 +52,8 @@ mod run $WORKSPACE --recipe io.moderne.java.spring.boot4.UpgradeSpringBoot_4_0
 
 # Apply the suggested changes to all projects
 mod git apply . --last-recipe-run
-```
 
-This repository includes some helper scripts to run commands like testing, releasing, and doing common git actions across your repositories.  You can run `mvn clean install` on all projects with the `build.sh` script:
-
-```bash
+# Build the projects to see if they compile
 $WORKSHOP/build.sh
 ```
 
@@ -401,74 +407,3 @@ $WORKSHOP/release.sh 1
 ```
 
 Continue to upgrade all of your waves.
-
-
-
-
-
-
-
-
-1. Apply the suggested changes to all projects: `mod git apply . --last-recipe-run `
-1. Check to see if projects compile after the recipe: `mod exec . -- mvn clean package`
-1. Rebuild the LSTs so they reflect the new changes and the mod CLI will detect the new Java versions: `mod build $WORKSPACE`
-We can see that only a couple of our projects - some but not all of our shared libraries - successfully build now.
-
-1. Next, we can try to do our migration in layers to get some iterative value and see where things break down:
-    1. Upgrade build tools:
-        - `mod run $WORKSPACE --recipe org.openrewrite.maven.UpdateMavenWrapper -P "wrapperVersion=3.3.4" -P "wrapperDistribution=script" -P "distributionVersion=3.9.11" -P "addIfMissing=true"`
-        - Note that this doesn't seem to work correctly at the moment, only upgrading some repositories but not others.
-    1. Upgrade test framework:
-        - We know JUnit 6 requires a minimum of Java 17, so we can do JUnit 5 first so that we have a smaller changeset when we upgrade Java.
-        - `mod run $WORKSPACE --recipe org.openrewrite.java.testing.junit5.JUnit5BestPractices`
-        - `mod git apply . --last-recipe-run`
-        - If we try to build everything now, we see this is broken in some projects because of `@RunWith(SpringJUnit4ClassRunner.class)`.  This tells us we probably should upgrade Spring _before_ upgrading JUnit.
-    1. Spring Boot 2.7 has better support for modern Java versions including Java 17, so let's upgrade that first.
-        - `mod run $WORKSPACE --recipe org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7`
-        - `mod git apply . --last-recipe-run`
-        - If we build now, we see that some projects fail to build because of a removed spring-cloud-starter-zipkin dependency.  We can replace this dependency with it's new version.
-    1. Replace the spring-cloud-starter-zipkin dependency with it's new version spring-cloud-sleuth-zipkin:
-        - `mod run $WORKSPACE --recipe org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId -P "oldGroupId=org.springframework.cloud" -P "oldArtifactId=spring-cloud-starter-zipkin" -P "newGroupId=org.springframework.cloud" -P "newArtifactId=spring-cloud-sleuth-zipkin"`
-        - `mod git apply . --last-recipe-run`
-        - Test the build and this should still be building successfully.  3 projects should have updated as a result of this recipe.
-    1. Go back and run the Spring Boot 2.7 upgrade again.  Apply and build it.  This should build now, and you've officially upgraded Spring Boot to 2.7.
-    1. Next up, let's return to our JUnit upgrade.  Rerun and retest.  This should now pass because the upgrade to Spring Boot 2.7 removed the unneeded `@RunWith` annotation.  Now we've upgraded JUnit to 5.
-    1. Although future migration recipes may fix the javax-to-jakarta migration, we can do this as another layer here:
-        - `mod run $WORKSPACE --recipe org.openrewrite.java.migrate.jakarta.JakartaEE11`
-        - `mod git apply . --last-recipe-run`
-        - test build
-    1. To go to Spring Boot 3.x onward or JUnit 6, we'll need to upgrade Java to 17 or higher.  Let's tackle that upgrade next, so that we're isolating those specific changes.
-        - `mod run $WORKSPACE --recipe org.openrewrite.java.migrate.UpgradeToJava17`
-        - `mod git apply . --last-recipe-run`
-        - This should build successfully - we're up to a new version of Java!
-    
-    1. Alright, it feels like we're as ready as we can be to jump to Spring Boot 4.0.  Let's do that now:
-        - `mod run $WORKSPACE --recipe org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0`
-        - `mod git apply . --last-recipe-run`
-    
-    
-1. Let's run some migration planning recipes to see what we can learn:
-    ```bash
-    # DevCenterStarter
-    mod run $WORKSPACE --recipe io.moderne.devcenter.DevCenterStarter
-    mod devcenter . --last-recipe-run
-
-    # PlanJavaMigration
-    mod run $WORKSPACE --recipe org.openrewrite.java.migrate.search.PlanJavaMigration
-    mod study $WORKSPACE --last-recipe-run --data-table JavaVersionMigrationPlan
-    ```
-
-    PlanJavaMigration gives us current Java version and if its a Gradle or Maven project.  I'm not sure there's a lot of actionable info here that should change out mind about approach, just situational awareness.
-
-    Let's see if we can find which Spring Boot versions we're using:
-    ```bash
-    mod run $WORKSPACE --recipe org.openrewrite.java.dependencies.DependencyInsight -P "groupIdPattern=org.springframework.boot" -P "artifactIdPattern=spring-boot" -P "scope=runtime"
-    ```
-1. TODO: Find shared libraries or other kinds of dependencies across repositories
-1. TODO: Find projects that are limited in the Java version they can use'
-
-
-
-
-
-mod run $WORKSPACE --recipe org.openrewrite.maven.UpdateMavenWrapper -P "distributionVersion=3.9.11" -P "addIfMissing=true" -P "wrapperDistribution=script"
