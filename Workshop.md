@@ -56,7 +56,7 @@ First up, you can always start by running the full migration recipe that we ulti
 mod run $WORKSPACE --recipe io.moderne.java.spring.boot4.UpgradeSpringBoot_4_0
 
 # Apply the suggested changes to all projects
-mod git apply . --last-recipe-run
+mod git apply $WORKSPACE --last-recipe-run
 
 # Build the projects to see if they compile
 $WORKSHOP/build.sh
@@ -261,7 +261,7 @@ mod git sync csv $WORKSPACE $WORKSHOP/repos-waves.csv --with-sources
 Check out your new structure:
 
 ```bash
-tree -d . -L 3
+tree -d $WORKSPACE -L 3
 ```
 
 Alright, we're ready to start making actual changes to our repositories!
@@ -291,7 +291,7 @@ For some upgrades, it's often helpful to run the upgrade recipes for the languag
 mod run $WORKSPACE --recipe org.openrewrite.maven.BestPractices
 
 # Apply the changes from the recipe
-mod git apply . --last-recipe-run
+mod git apply $WORKSPACE --last-recipe-run
 
 # Test that everything still builds correctly after our changes
 $WORKSHOP/build.sh
@@ -310,10 +310,10 @@ This should build successfully. Since we're on a variety of Spring Boot 2.x vers
 
 ```bash
 # Run the recipe to change a dependency's artifactId
-mod run . --recipe org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId -P "oldGroupId=org.springframework.cloud" -P "oldArtifactId=spring-cloud-starter-zipkin" -P "newGroupId=org.springframework.cloud" -P "newArtifactId=spring-cloud-sleuth-zipkin"
+mod run $WORKSPACE --recipe org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId -P "oldGroupId=org.springframework.cloud" -P "oldArtifactId=spring-cloud-starter-zipkin" -P "newGroupId=org.springframework.cloud" -P "newArtifactId=spring-cloud-sleuth-zipkin"
 
 # Apply the changes from the recipe
-mod git apply . --last-recipe-run
+mod git apply $WORKSPACE --last-recipe-run
 
 # Test that everything still builds correctly after our changes
 $WORKSHOP/build.sh
@@ -333,7 +333,7 @@ Now let's upgrade our baseline to Spring Boot 2.7:
 mod run $WORKSPACE --recipe org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7
 
 # Apply the changes from the recipe
-mod git apply . --last-recipe-run
+mod git apply $WORKSPACE --last-recipe-run
 
 # Test that everything still builds correctly after our changes
 $WORKSHOP/build.sh
@@ -353,7 +353,7 @@ Let's do the same thing for our Java version - we're on Java 8, so let's make su
 mod run $WORKSPACE --recipe org.openrewrite.java.migrate.UpgradeToJava8
 
 # Apply the changes from the recipe
-mod git apply . --last-recipe-run
+mod git apply $WORKSPACE --last-recipe-run
 
 # Test that everything still builds correctly after our changes
 $WORKSHOP/build.sh
@@ -372,7 +372,7 @@ Everything up until this point should be build successfully so far, and we're no
 
 We could try upgrading Spring Boot to 4.0 now, but that might still be a larger changeset with many speed bumps between us and a successful release of some new value. Let's start with a much smaller change and upgrade our Java to 17, since we know that's a prerequisite for JUnit 6 and Spring Boot 3.x.
 
-> We can't upgrade to Java 25 yet because it wasn't released when Spring Boot 2.7 was most recently released, so those dependencies are incompatible with Java 25's class file format. Give it a try and see what happens with `mod run . --recipe org.openrewrite.java.migrate.UpgradeToJava25`
+> We can't upgrade to Java 25 yet because it wasn't released when Spring Boot 2.7 was most recently released, so those dependencies are incompatible with Java 25's class file format. Give it a try and see what happens with `mod run $WORKSPACE --recipe org.openrewrite.java.migrate.UpgradeToJava25`
 
 Run the upgrade to Java 17:
 
@@ -381,7 +381,7 @@ Run the upgrade to Java 17:
 mod run $WORKSPACE --recipe org.openrewrite.java.migrate.UpgradeToJava17
 
 # Apply the changes from the recipe
-mod git apply . --last-recipe-run
+mod git apply $WORKSPACE --last-recipe-run
 
 # Test that everything still builds correctly after our changes
 $WORKSHOP/build.sh
@@ -401,7 +401,7 @@ The Spring Boot 4.0 upgrade recipe will upgrade to newer versions of JUnit too, 
 mod run $WORKSPACE --recipe org.openrewrite.java.testing.junit.JUnit6BestPractices 
 
 # Apply the changes from the recipe
-mod git apply . --last-recipe-run
+mod git apply $WORKSPACE --last-recipe-run
 
 # Test that everything still builds correctly after our changes
 $WORKSHOP/build.sh
@@ -449,14 +449,14 @@ mod build $WORKSPACE
 
 ## Step 5: Upgrading QueryDSL
 
-You'll often run into third-party libraries that you're using that need some code changes to upgrade above and beyond just bumping a dependency version to a newer release. QueryDSL 3.x generates classes using the outdated `javax.*` namespaces, but it's also gone through some restructuring in newer releases that have changed package names and APIs. This is a good example of running into a speed bump that will require you to write a custom recipe to get past. In this case, custom recipe authorship is outside the scope of this workshop so [we've written one for you](https://github.com/mtthwcmpbll/rewrite-querydsl). Similar to the Release-Train-Metro-Plan earlier, you'll need to clone this repository and build and install it locall to use it in the Moderne CLI:
+You'll often run into third-party libraries that you're using that need some code changes to upgrade above and beyond just bumping a dependency version to a newer release. QueryDSL 3.x generates classes using the outdated `javax.*` namespaces, but it's also gone through some restructuring in newer releases that have changed package names and APIs. This is a good example of running into a speed bump that will require you to write a custom recipe to get past. In this case, custom recipe authorship is outside the scope of this workshop so [we've written one for you](https://github.com/modernetraining/rewrite-querydsl). Similar to the Release-Train-Metro-Plan earlier, you'll need to clone this repository and build and install it locall to use it in the Moderne CLI:
 
 ```bash
 # Change to projects directory outside of workspace
 cd $PROJECTS
 
 # Clone the recipe project, build, and install it
-git clone git@github.com:mtthwcmpbll/rewrite-querydsl.git
+git clone git@github.com:modernetraining/rewrite-querydsl.git
 cd rewrite-querydsl
 mvn clean install
 mod config recipes jar install org.openrewrite.recipe:rewrite-querydsl:0.1.0-SNAPSHOT
@@ -506,10 +506,10 @@ recipeList:
       groupId: com.example.ecom
       artifactId: "*"
       newVersion: 1.x
-  - org.openrewrite.recipe.querydsl.UpgradeToQueryDsl5
   - org.openrewrite.recipe.custom.MigrateJackson2JsonMessageConverter
   - org.openrewrite.recipe.custom.UpgradeSpringCloud_2025_1
   - io.moderne.java.spring.boot4.UpgradeSpringBoot_4_0
+  - org.openrewrite.recipe.querydsl.UpgradeToQueryDsl5
 
 EOF
 

@@ -3,8 +3,8 @@
 # Exit immediately if a command exits with a non-zero status
 # set -e
 
-# Default to mtthwcmpbll if GITHUB_ORG is not set
-GITHUB_ORG=${GITHUB_ORG:-mtthwcmpbll}
+# Default to modernetraining if GITHUB_ORG is not set
+GITHUB_ORG=${GITHUB_ORG:-modernetraining}
 
 # Define the list of repositories (just the name)
 repositories=(

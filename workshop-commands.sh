@@ -110,7 +110,7 @@ $WORKSHOP/build.sh # succeeds (we're back to where we were before)
 mod build $WORKSPACE
 
 cd $PROJECTS 
-git clone git@github.com:mtthwcmpbll/rewrite-querydsl.git
+git clone git@github.com:modernetraining/rewrite-querydsl.git
 cd rewrite-querydsl
 mvn clean install
 mod config recipes jar install org.openrewrite.recipe:rewrite-querydsl:0.1.0-SNAPSHOT

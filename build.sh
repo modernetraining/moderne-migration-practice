@@ -10,8 +10,8 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Default to mtthwcmpbll if GITHUB_ORG is not set
-GITHUB_ORG=${GITHUB_ORG:-mtthwcmpbll}
+# Default to modernetraining if GITHUB_ORG is not set
+GITHUB_ORG=${GITHUB_ORG:-modernetraining}
 
 # Temporary log file to capture output
 LOG_FILE=$(mktemp)

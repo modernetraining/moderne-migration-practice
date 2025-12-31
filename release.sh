@@ -14,8 +14,8 @@ NC='\033[0m' # No Color
 # Temporary log file to capture output
 LOG_FILE=$(mktemp)
 
-# Default to mtthwcmpbll if GITHUB_ORG is not set
-GITHUB_ORG=${GITHUB_ORG:-mtthwcmpbll}
+# Default to modernetraining if GITHUB_ORG is not set
+GITHUB_ORG=${GITHUB_ORG:-modernetraining}
 
 # Clean up log file on exit
 cleanup() {
